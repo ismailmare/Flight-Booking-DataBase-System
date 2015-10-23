@@ -1,8 +1,8 @@
-                # Assignment:           Proj 2
+# Assignment:           Proj 2
 # Due Date:             October, 27 2015
-# Name:                 Ismail Mare, Janice Loo
-# Unix ID:              imare
-# StudentID:            1388973
+# Name:                 Ismail Mare, Janice Loo, Preyanshu Kumar
+# Unix ID:              imare, --Add your unix ids!--
+# StudentID:            1388973, --Add your sids!--
 # Lecture Section:      B1
 # Instructor:           Davood Rafiei
 #---------------------------------------------------------------
@@ -14,6 +14,11 @@ import sys
 import datetime
 import math
 
+
+
+
+#----------------------------------------------------
+#Ismail Part
 #stuff in red is mostly SQL statements
 
 #Search for flights
@@ -107,6 +112,13 @@ def search():
 def bookings():
         print("\n"*10)
         return
+        
+#----------------------------------------------------------
+#Preyanshu Part
+        
+        
+        
+        
 
 def list_():
         print("\n"*10)
@@ -115,6 +127,19 @@ def list_():
 def cancel():
         print("\n"*10)
         return
+        
+        
+#-------------------------------------------------------
+
+Janice Part
+
+
+rec_departure():
+	return
+rec_arrival():
+	return
+
+#-------------------------------------------------------
 
 #completly finished 
 #will log in registered users and register new users
@@ -202,8 +227,7 @@ def main():
                         print("Your input is out of range! Enter a choice between 1 to 5")
                 else:
                         options[choice]()
-                
-#       else:
+        
      		
          
         curs.close()
