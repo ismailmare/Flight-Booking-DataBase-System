@@ -147,7 +147,6 @@ def login():
         print("\n"*10)
         print("WELCOME\n");
         key = input("Press A to Log in or S to Register Or Press Q to exit \n\n\n\t\t\t\t\t")
-        now = datetime.datetime.now()
         
         if (key==q) or (key==Q):
                 return email,key
@@ -174,7 +173,7 @@ def login():
                 password = input("\nPlease enter your password: ") 
                 
                 curs.execute("INSERT INTO users "
-                             "VALUES(email1, password, now)")    
+                             "VALUES(email1, password, SYSDATE)")    
                 print("\nWelcome ", email)
                 
         return email,key
@@ -187,13 +186,10 @@ def login():
 #Will connect to dbms
 #and login/logout is implemented
 def main():
-        username = input("Enter the username for sql: ")
-        password = input("Ener the password for sql: ")
-        connection = cx_Oracle.connect("username/password@gwynne.cs.ualberta.ca[:1521]/CRS")
-        curs = connection.cursor()
+       
  
         
-       user ,email1, key = login() # 0 is stored in user if user is not an airline agent
+        email1, key = login() # 0 is stored in user if user is not an airline agent
         			   # 1 is stored in the user if the user IS an airline agent
 
         if (key==q) or (key==Q):
@@ -217,19 +213,27 @@ def main():
                           5 : logout,
                           }
                 if choice==5:
-			time = datetime.datetime.now()
                         curs.execute("UPDATE users "
-                                      "SET(last_login=time) where email=email1 ")
+                                      "SET(last_login=SYSDATE) where email=email1 ")
                                       
                         Print("Have a nice day, Goodbye")
                         break
                 if choice ==3:
                        list_(email1, username)
+                if choice ==1:
+                	search()
+               	if choice ==2:
+               		book()
                 if (choice>5) or (choice<1):
                         print("Your input is out of range! Enter a choice between 1 to 5")
-                else:
-                        options[choice]()
+                     
         
      		
          
         curs.close()
+
+username = input("Enter the username for sql: ")
+password = input("Ener the password for sql: ")
+connection = cx_Oracle.connect('' +username+ '/' +password+'@gwynne.cs.ualberta.ca:1521/CRS')
+curs = connection.cursor()
+main()
