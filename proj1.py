@@ -6,7 +6,7 @@
 # Lecture Section:      B1
 # Instructor:           Davood Rafiei
 #---------------------------------------------------------------
-
+#
 
 #importing necessary libraries
 import cx_Oracle
