@@ -1,8 +1,8 @@
 # Assignment:           Proj 2
 # Due Date:             October, 27 2015
 # Name:                 Ismail Mare, Janice Loo, Preyanshu Kumar
-# Unix ID:              imare, --Add your unix ids!--
-# StudentID:            1388973, --Add your sids!--
+# Unix ID:              imare, preyansh --Add your unix ids!--
+# StudentID:            1388973, 1395321 --Add your sids!--
 # Lecture Section:      B1
 # Instructor:           Davood Rafiei
 #---------------------------------------------------------------
@@ -114,16 +114,16 @@ def bookings():
         return
         
 #----------------------------------------------------------
-#Preyanshu Part
-        
-        
-        
-        
-
-def list_():
+#Preyanshu Part        
+#List existing bookings. A user should be able to list all his/her existing bookings. The result will be given in a list form and will include for each booking, the ticket number, the passCancel a booking. The user should be able to select a booking from those listed under "list existing bookings" and cancel it. The proper tables should be updated to reflect the cancelation and the cancelled seat should be returned to the system and is made available for future bookings.enger name, the departure date and the price. The user should be able to select a row and get more detailed information about the booking.
+def list_(email, user):
         print("\n"*10)
+        while True:
+                curs.execute("select t.tno, t.name, s.dep_date, t.paid_price from tickets t, bookings b, passengers p, sch_flights s where t.email="+email "and t.tno=b.tno")
         return
 
+
+#Cancel a booking. The user should be able to select a booking from those listed under "list existing bookings" and cancel it. The proper tables should be updated to reflect the cancelation and the cancelled seat should be returned to the system and is made available for future bookings.
 def cancel():
         print("\n"*10)
         return
@@ -222,7 +222,9 @@ def main():
                                       "SET(last_login=time) where email=email1 ")
                                       
                         Print("Have a nice day, Goodbye")
-                        break 
+                        break
+                if choice ==3:
+                       list_(email1, username)
                 if (choice>5) or (choice<1):
                         print("Your input is out of range! Enter a choice between 1 to 5")
                 else:
