@@ -145,9 +145,13 @@ def list_(email, user):
                        for r in range(0,len(rows)):
                                print (r,rows[r:-3])
                        choice=input("Please select a Booking You would like to know more about")
+                       choice=int()
                        if (choice>0):
                                rows=curs.fetchone()
                                print(rows)
+                       else:
+                               print("No bookings chosen, return to main menu")
+                               break
                                 
         return
 
