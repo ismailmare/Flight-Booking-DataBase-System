@@ -120,6 +120,14 @@ def list_(email, user):
         print("\n"*10)
         while True:
                 curs.execute("select t.tno, t.name, s.dep_date, t.paid_price from tickets t, bookings b, passengers p, sch_flights s where t.email="+email+ "and t.tno=b.tno")
+                rows=curs.fetchall()
+                if rows == "[]":
+                        print("No Bookings Find, Please Book a Flight, Returning to Main Menu")
+                        break
+                else:
+                        for r in range(0,len(rows)):
+                                print (r,rows[r:-3])
+                        choice=input("Please select a Booking You would like to know more about")
         return
 
 #Cancel a booking. The user should be able to select a booking from those listed under "list existing bookings" and cancel it. The proper tables should be updated to reflect the cancelation and the cancelled seat should be returned to the system and is made available for future bookings.
