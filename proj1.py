@@ -160,6 +160,10 @@ def list_(email, user):
                                else:
                                        print("Returning to Main Menu")
                                        return
+                       else if (choice.isalpha()):
+                               print("Invalid Input, Please enter a Number!")
+                               break
+                               
                                 
                        else:
                                print("No bookings chosen, return to main menu")
