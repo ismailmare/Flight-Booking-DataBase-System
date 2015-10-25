@@ -119,9 +119,8 @@ def bookings():
 def list_(email, user):
         print("\n"*10)
         while True:
-                curs.execute("select t.tno, t.name, s.dep_date, t.paid_price from tickets t, bookings b, passengers p, sch_flights s where t.email="+email "and t.tno=b.tno")
+                curs.execute("select t.tno, t.name, s.dep_date, t.paid_price from tickets t, bookings b, passengers p, sch_flights s where t.email="+email+ "and t.tno=b.tno")
         return
-
 
 #Cancel a booking. The user should be able to select a booking from those listed under "list existing bookings" and cancel it. The proper tables should be updated to reflect the cancelation and the cancelled seat should be returned to the system and is made available for future bookings.
 def cancel():
@@ -131,12 +130,12 @@ def cancel():
         
 #-------------------------------------------------------
 
-Janice Part
+#Janice Part
 
 
-rec_departure():
+def rec_departure():
 	return
-rec_arrival():
+def rec_arrival():
 	return
 
 #-------------------------------------------------------
@@ -148,9 +147,9 @@ def login():
         print("WELCOME\n");
         key = input("Press A to Log in or S to Register Or Press Q to exit \n\n\n\t\t\t\t\t")
         
-        if (key==q) or (key==Q):
-                return email,key
-        elif (key==a) or (key==A):
+        if (key =='q') or (key =='Q'):
+                return key
+        elif (key =='a') or (key =='A'):
                 
                 while True:
                         email1 = input("\nPlease enter your email: ")
@@ -161,14 +160,14 @@ def login():
                         rows = curs.fetchall()
                         if rows==1:
                                 print("\nWelcome ", email)
-                                return email,key
+                                return email1,key
                         else:
                                 print("\n Invalid email or password")
-                                do = input("To quit enter Q or to try again A: ")
-                                if (do==q) or (do==Q):
-                                        return email,do
+                                do = input("To quit enter Q or any other key to try again: ")
+                                if (do =='q') or (do =='Q'):
+                                        return do
                         
-        elif (key==s) or (key==S):
+        elif (key =='s') or (key =='S'):
                 email1 = input("\nPlease enter your email: ")
                 password = input("\nPlease enter your password: ") 
                 
@@ -176,7 +175,7 @@ def login():
                              "VALUES(email1, password, SYSDATE)")    
                 print("\nWelcome ", email)
                 
-        return email,key
+        return email1,key
         
         
 
@@ -189,11 +188,11 @@ def main():
        
  
         
-        email1, key = login() # 0 is stored in user if user is not an airline agent
+        key = login() # 0 is stored in user if user is not an airline agent
         			   # 1 is stored in the user if the user IS an airline agent
 
-        if (key==q) or (key==Q):
-                Print("Have a nice day, Goodbye")
+        if (key =='q') or (key =='Q'):
+                print("Have a nice day, Goodbye")
                 return
 
 	#if user == 0:       	 
@@ -206,12 +205,6 @@ def main():
         
                 choice = input("Pick a choice between 1-5: ")
         
-                option = {1 : search,
-                          2 : book,
-                          3 : list_,
-                          4 : cancel,
-                          5 : logout,
-                          }
                 if choice==5:
                         curs.execute("UPDATE users "
                                       "SET(last_login=SYSDATE) where email=email1 ")
@@ -220,10 +213,13 @@ def main():
                         break
                 if choice ==3:
                        list_(email1, username)
+
                 if choice ==1:
                 	search()
+
                	if choice ==2:
                		book()
+
                 if (choice>5) or (choice<1):
                         print("Your input is out of range! Enter a choice between 1 to 5")
                      
@@ -232,8 +228,14 @@ def main():
          
         curs.close()
 
-username = input("Enter the username for sql: ")
-password = input("Ener the password for sql: ")
-connection = cx_Oracle.connect('' +username+ '/' +password+'@gwynne.cs.ualberta.ca:1521/CRS')
-curs = connection.cursor()
-main()
+try:
+	username = input("Enter the username for sql: ")
+	password = input("Ener the password for sql: ")
+	connection = cx_Oracle.connect('' +username+ '/' +password+'@gwynne.cs.ualberta.ca:1521/CRS')
+	curs = connection.cursor()
+	main()
+except cx_Oracle.DatabaseError as exc:
+	error, =exc.args
+	print( sys.stderr, "Oracle code:", error.code)
+	print( sys.stderr, "Oracle code:", error.message) 
+
