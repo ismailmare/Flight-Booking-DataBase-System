@@ -102,10 +102,11 @@ def bookings():
 def list_(email, user):
         print("\n"*10)
         while True:
-                curs.execute("select t.tno, t.name, s.dep_date, t.paid_price from tickets t, bookings b, passengers p, sch_flights s where t.email="+email+ "and t.tno=b.tno")
-                rows=curs.fetchall()
-                if rows == "[]":
-                        print("No Bookings Find, Please Book a Flight, Returning to Main Menu")
+               query="SELECT t.tno, t.name, s.dep_date, t.paid_price FROM tickets t, bookings b, passengers p, sch_flights s WHERE t.email=:email and t.tno=b.tno"
+               curs.execute(query, {"email":email})
+               rows=curs.fetchall()
+               if rows == "[]":
+                       print("No Bookings Find, Please Book a Flight, Returning to Main Menu")
                         break
                 else:
                         for r in range(0,len(rows)):
