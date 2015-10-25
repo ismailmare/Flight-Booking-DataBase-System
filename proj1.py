@@ -152,38 +152,48 @@ def rec_arrival():
 #will log in registered users and register new users
 def login():
         print("\n"*10)
-        print("WELCOME\n");
-        key = input("Press A to Log in or S to Register Or Press Q to exit \n\n\n\t\t\t\t\t")
+        print("WELCOME\n")
+ 
+        print("1. Enter 1 to log in\n")
+        print("2. Enter 2 to register\n")
+        print("3. Enter 3 to exit\n")
+        key = input("Please choose an option: ")
         
-        if (key =='q') or (key =='Q'):
+        if (key =='3'):
                 return key
-        elif (key =='a') or (key =='A'):
+        elif (key =='1'):
                 
                 while True:
+                        global email1
+                        global password
                         email1 = input("\nPlease enter your email: ")
                         password = input("\nPlease enter your password: ")
-                        curs.execute("SELECT email, from users where email == email1," 
-                             "and pass =password")
-                
+                        email1='{0: <20}'.format(email1)
+                        password='{0: <0}'.format(password)
+                        select="SELECT email FROM users WHERE (email=:email1) and (pass=:password)"
+                        curs.execute(select, {'email1': email1, 'password':password})
+			
                         rows = curs.fetchall()
-                        if rows==1:
-                                print("\nWelcome ", email)
-                                return email1,key
+                        print(rows)
+                        if len(rows)>0:
+                                print("\nWelcome ", email1)
+                                return key
                         else:
                                 print("\n Invalid email or password")
                                 do = input("To quit enter Q or any other key to try again: ")
                                 if (do =='q') or (do =='Q'):
-                                        return do
+                                        return '3'
                         
-        elif (key =='s') or (key =='S'):
+        elif (key =='2'):
                 email1 = input("\nPlease enter your email: ")
                 password = input("\nPlease enter your password: ") 
                 
-                curs.execute("INSERT INTO users "
-                             "VALUES(email1, password, SYSDATE)")    
-                print("\nWelcome ", email)
+                insert="insert into users(email,pass,last_login) VALUES(:email1,:password,SYSDATE)"
+                cursInsert.execute(insert, {'email1': email1, 'password': password})
+                connection.commit()
+                print("\nWelcome ", email1)
                 
-        return email1,key
+        return key
         
         
 
@@ -199,25 +209,28 @@ def main():
         key = login() # 0 is stored in user if user is not an airline agent
         			   # 1 is stored in the user if the user IS an airline agent
 
-        if (key =='q') or (key =='Q'):
-                print("Have a nice day, Goodbye")
+        if (key =='3'):
+                print("\nHave a nice day, Goodbye")
+                curs.close()
+                cursInsert.close()
                 return
 
 	#if user == 0:       	 
         while True:
-                print("1. Search for flights")
+                print("\n1. Search for flights")
                 print("2. Make a booking")
                 print("3. List existing bookings")
                 print("4. Cancel a booking")
                 print("5. Logout")
         
                 choice = input("Pick a choice between 1-5: ")
-        
+       
+                choice=int(choice) 
                 if choice==5:
-                        curs.execute("UPDATE users "
-                                      "SET(last_login=SYSDATE) where email=email1 ")
+                        curs.prepare("UPDATE users SET last_login=SYSDATE where email=:email1")
+                        curs.execute(None, {'email1': email1})
                                       
-                        Print("Have a nice day, Goodbye")
+                        print("Have a nice day, Goodbye")
                         break
                 if choice ==3:
                        list_(email1, username)
@@ -229,18 +242,21 @@ def main():
                		book()
 
                 if (choice>5) or (choice<1):
-                        print("Your input is out of range! Enter a choice between 1 to 5")
+                        print("\nYour input is out of range! Enter a choice between 1 to 5")
                      
         
      		
          
         curs.close()
+        cursInsert.close()	
 
 try:
-	username = input("Enter the username for sql: ")
-	password = input("Ener the password for sql: ")
-	connection = cx_Oracle.connect('' +username+ '/' +password+'@gwynne.cs.ualberta.ca:1521/CRS')
+#	username = input("\n\nEnter the username for sql: ")
+#	password = input("Ener the password for sql: ")
+	connection = cx_Oracle.connect('imare/1!Afore6146a@gwynne.cs.ualberta.ca:1521/CRS')
+#	connection = cx_Oracle.connect('' +username+ '/' +password+'@gwynne.cs.ualberta.ca:1521/CRS')
 	curs = connection.cursor()
+	cursInsert = connection.cursor()
 	main()
 except cx_Oracle.DatabaseError as exc:
 	error, =exc.args
