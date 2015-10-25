@@ -25,11 +25,8 @@ import math
 #got upto searching for valid src and dst codes from user
 # not complete
 def search():
-        print("\n"*10)
         while True:
             source = input("Enter the source: ")
-            dest = input("Enter the destination: ")
-            departure = input("Enter the departure date as 'YYYY-MM-DD': ")
        
             if len(source)==3:
                 source = source.upper()
@@ -37,54 +34,90 @@ def search():
                 curs.execute(select,{'source':source})
                 rows = curs.fetchall()
 		
-                if len(rows)>0:
-                        continue
-                else:
+                if len(rows)==0:
                         print("\nCould not find any flights")
                         return
             else:
-                source = '{0:<20}'.format(source)
+                source = '{0:<15}'.format(source)
                 source = source.title()
-                select="SELECT acode FROM airports WHERE (city = :source)"
+                select="SELECT acode,city FROM airports WHERE (city = :source)"
                 curs.execute(select,{'source':source})
 
                 rows = curs.fetchall()
                 if len(rows)>0:
-                        print(rows)
-                        source = input("\nPlease enter the airport code")
+                        print('\n')
+                        print(rows[0][0] + ": " +rows[0][1])
+                        source = input("\nPlease enter the source airport code: ")
                         source = source.upper()
-                        continue
                 else:
-                    print("\nCould not find any flights")
+                    print("\nCould not find any flights MAIN MENU")
                     return
                             
             
-                
+            dest = input("\nEnter the destination: ")     
             if len(dest)==3:
                         dest = dest.upper()
-                        select = "SELECT acode FROM flights airports WHERE (acode=:dest)"
+                        select = "SELECT acode FROM airports WHERE (acode=:dest)"
                         curs.execute(select, {'dest':dest})
                         rows = curs.fetchall()
                 
                         if len(rows)>0:
-                	        continue
+                	        break
                         else:
                                 print("\nCould not find any flights")
                                 return
             else:
-                        dest = '{0:<20}'.format(source)
-                        dest = source.title()
-                        select="SELECT acode FROM airports WHERE city = :dest"
+                        dest = '{0:<15}'.format(dest)
+                        dest = dest.title()
+                        select="SELECT acode,city  FROM airports WHERE (city = :dest)"
                         curs.execute(select,{'dest':dest})
 
                         rows = curs.fetchall()
                         if len(rows)>0:
-                                print(rows)    
-                                dest=input("\nPlease enter the airport code")
+
+                                print('\n')
+                                print(rows[0][0] + ": "+ rows[0][1]) 
+                              
+                                dest=input("\nPlease enter the destination airport code: ")
                                 dest = dest.upper()
-                                continue
+                                break
                         else:
-                 	        print("\nCould not find any flights")
+                                print("\nCould not find any flights, MAIN MENU")
+                                return
+
+
+        dep_time1 = input("Enter the departure date as 'DD/MM/YYYY': ")	
+        choice=input("Sort by number of connections? y/n: ")
+        select = "SELECT flightno,src,dst,dep_time,arr_time, price, seats from available_flights1 where to_char(dep_time,'DD/MM/YYYY')=:dep_time1 and src=:source and dst=:dest ORDER BY price"
+        curs.execute(select,{'source': source, 'dest':dest,'dep_time1':dep_time1})
+        rows_direct=curs.fetchall()
+
+        select = "select flightno1, flightno2, src, dst, dep_date, layover,price from good_connections1 where to_char(dep_date,'DD/MM/YYYY')=:dep_time1 and src=:source and dst=:dest ORDER BY price, layover"
+        curs.execute(select,{'source':source, 'dest': dest,'dep_time1':dep_time1})
+        rows_connect= curs.fetchall()
+
+        x=0
+        for i in range(len(rows_direct)):
+                print("%s. %s" % (x, rows_direct[i]))
+                x=x+1
+
+        for i in range(len(rows_connect)): 
+                print("%s. %s" % (x, rows_direct[i]))	
+                x=x+1
+
+        choice=input("\nWhich flight would you like to book or Q to return to menu: ")
+
+        try:
+                choice=int(choice)
+        except:
+                return
+
+        if choice<=len(rows_direct):
+                flightno = rows_direct[choice][0]
+        elif choice>len(rows_direct):
+                flightno1= rows_connect[choice][0]
+                flightno2= rows_connect[choice][1]
+	
         return
 
 
@@ -204,6 +237,14 @@ def main():
                 curs.close()
                 cursInsert.close()
                 return
+        curs.execute("drop view available_flights1")
+        curs.execute("drop view good_connections1")
+
+        curs.execute("create view available_flights1 (flightno,dep_date, src,dst,dep_time,arr_time,fare,seats,price) as select f.flightno, sf.dep_date, f.src, f.dst, f.dep_time+(trunc(sf.dep_date)-trunc(f.dep_time)), f.dep_time+(trunc(sf.dep_date)-trunc(f.dep_time))+(f.est_dur/60+a2.tzone-a1.tzone)/24,fa.fare, fa.limit-count(tno), fa.price from flights f, flight_fares fa, sch_flights sf, bookings b, airports a1, airports a2 where f.flightno=sf.flightno and f.flightno=fa.flightno and f.src=a1.acode and f.dst=a2.acode and fa.flightno=b.flightno(+) and fa.fare=b.fare(+) and sf.dep_date=b.dep_date(+) group by f.flightno, sf.dep_date, f.src, f.dst, f.dep_time, f.est_dur,a2.tzone,a1.tzone, fa.fare, fa.limit, fa.price having fa.limit-count(tno) > 0")
+
+        curs.execute("create view good_connections1 (src,dst,dep_date,flightno1,flightno2, layover,price) as select a1.src, a2.dst, a1.dep_date, a1.flightno, a2.flightno, a2.dep_time-a1.arr_time,min(a1.price+a2.price) from available_flights1 a1, available_flights1 a2 where a1.dst=a2.src and a1.arr_time +1.5/24 <=a2.dep_time and a1.arr_time +5/24 >=a2.dep_time group by a1.src, a2.dst, a1.dep_date, a1.flightno, a2.flightno, a2.dep_time, a1.arr_time")
+
+
 
 	#if user == 0:
         key=int(key)       	 
