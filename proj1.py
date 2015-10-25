@@ -112,10 +112,13 @@ def list_(email, user):
                        for r in range(0,len(rows)):
                                print (r,rows[r:-3])
                        choice=input("Please select a Booking You would like to know more about")
-                       choice=int()
+                       choice=int(choice)
                        if (choice>0):
                                rows=curs.fetchone()
                                print(rows)
+                               choice2=str(input("Do you wish to cancel this flight? Yes/No?"))
+                               if choice2==("Yes"):
+                                    print ("Flight has been canceled")    
                        else:
                                print("No bookings chosen, return to main menu")
                                break
