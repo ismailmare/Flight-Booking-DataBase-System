@@ -169,7 +169,7 @@ def login():
                         email1 = input("\nPlease enter your email: ")
                         password = input("\nPlease enter your password: ")
                         email1='{0: <20}'.format(email1)
-                        password='{0: <0}'.format(password)
+                        password='{0: <4}'.format(password)
                         select="SELECT email FROM users WHERE (email=:email1) and (pass=:password)"
                         curs.execute(select, {'email1': email1, 'password':password})
 			
