@@ -140,21 +140,30 @@ def list_(email, user):
                rows=curs.fetchall()
                if rows == "[]":
                        print("No Bookings Find, Please Book a Flight, Returning to Main Menu")
-                       break
+                       return
                else:
                        for r in range(0,len(rows)):
                                print (r,rows[r:-3])
                        choice=input("Please select a Booking You would like to know more about")
                        choice=int(choice)
+                       print(rows[choice])
+                       print(rows[choice][1])
+                       print(rows[choice][2])
+                       print(rows[choice][3])
+                       #rows[choice]
                        if (choice>0):
-                               rows=curs.fetchone()
+                               rows=curs.fetchall()
                                print(rows)
                                choice2=str(input("Do you wish to cancel this flight? Yes/No?"))
                                if choice2==("Yes"):
-                                    print ("Flight has been canceled")    
+                                       print ("Flight has been canceled")
+                               else:
+                                       print("Returning to Main Menu")
+                                       return
+                                
                        else:
                                print("No bookings chosen, return to main menu")
-                               break
+                               return
                                 
         return
 
