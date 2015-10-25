@@ -111,10 +111,10 @@ def list_(email, user):
                else:
                        for r in range(0,len(rows)):
                                print (r,rows[r:-3])
-                        choice=input("Please select a Booking You would like to know more about")
-                        if (choice>0):
-                                rows=curs.fetchone()
-                                print(rows)
+                       choice=input("Please select a Booking You would like to know more about")
+                       if (choice>0):
+                               rows=curs.fetchone()
+                               print(rows)
                                 
         return
 
