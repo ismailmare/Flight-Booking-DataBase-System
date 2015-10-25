@@ -28,80 +28,63 @@ def search():
         print("\n"*10)
         while True:
             source = input("Enter the source: ")
-            destination = input("Enter the destination: ")
-            departure = input("Enter the departure date: ")
-            
-            curs.execute("SELECT src from flights where source == src")
-            rows = curs.fetchall()
-            
-            if rows == 0:
-                print("Not a valid Source Airport Code")
-                curs.execute("SELECT src, from flights,airports where src=acode and (city LIKE source) or (name LIKE source)"
-                             "ORDER BY src DESC")
+            dest = input("Enter the destination: ")
+            departure = input("Enter the departure date as 'YYYY-MM-DD': ")
+       
+            if len(source)==3:
+                source = source.upper()
+                select="SELECT acode FROM airports WHERE (acode = :source)"
+                curs.execute(select,{'source':source})
                 rows = curs.fetchall()
-
-                if rows>0:
-                    print(rows)
-                    num = input("Select row of Source Airport or Enter Q to search again: ")
-                    if (num > 0):
-                        source = rows[num]
-                        break
-                    else:
+		
+                if len(rows)>0:
                         continue
                 else:
-                    curs.execute("SELECT src, from flights,airports where src=acode and (city LIKE source[0:len(source)//2] or (name LIKE source[0:len(source)//2]"
-                                     "ORDER BY src DESC")
-                    rows = curs.fetchall()
-                    if rows>0:
+                        print("\nCould not find any flights")
+                        return
+            else:
+                source = '{0:<20}'.format(source)
+                source = source.title()
+                select="SELECT acode FROM airports WHERE (city = :source)"
+                curs.execute(select,{'source':source})
+
+                rows = curs.fetchall()
+                if len(rows)>0:
                         print(rows)
-                        num = input("Select row of Source Airport or Enter Q to search again: ")
-                        if (num > 0):
-                            source = rows[num]
-                            break
-                        else:
-                            continue
-                    else:
-                        print("Could not match source airport, please search again")
+                        source = input("\nPlease enter the airport code")
+                        source = source.upper()
                         continue
+                else:
+                    print("\nCould not find any flights")
+                    return
                             
             
-            curs.execute("SELECT dst from flights where destination == dst")
-            rows = curs.fetchall()
                 
-            if rows == 0:
-                print("Not a valid Destination Airport Code")
-                curs.execute("SELECT dst, from flights,airports where dst=acode and (city LIKE destination) or (name LIKE destination)"
-                     "ORDER BY dst DESC")
-                rows = curs.fetchall()
+            if len(dest)==3:
+                        dest = dest.upper()
+                        select = "SELECT acode FROM flights airports WHERE (acode=:dest)"
+                        curs.execute(select, {'dest':dest})
+                        rows = curs.fetchall()
                 
-                if rows>0:
-                    print(rows)
-                    num = input("Select row of Destination Airport or Enter Q to search again: ")
-                    if (num > 0):
-                        source = rows[num]
-                        break
-                    else:
-                        continue
-                else:
-                    curs.execute("SELECT dst, from flights,airports where dst=acode and (city LIKE destination[0:len(destination)//2] or (name LIKE destination[0:len(destination)//2]"
-                             "ORDER BY dst DESC")
-                    rows = curs.fetchall()
-                    if rows>0:
-                        print(rows)
-                        num = input("Select row of Destination Airport or Enter Q to search again: ")
-                        if (num > 0):
-                            source = rows[num]
-                            break
+                        if len(rows)>0:
+                	        continue
                         else:
-                            continue
-                    else:
-                        print("Could not match source airport, please search again")
-                        continue
+                                print("\nCould not find any flights")
+                                return
+            else:
+                        dest = '{0:<20}'.format(source)
+                        dest = source.title()
+                        select="SELECT acode FROM airports WHERE city = :dest"
+                        curs.execute(select,{'dest':dest})
 
-
-
-
-
+                        rows = curs.fetchall()
+                        if len(rows)>0:
+                                print(rows)    
+                                dest=input("\nPlease enter the airport code")
+                                dest = dest.upper()
+                                continue
+                        else:
+                 	        print("\nCould not find any flights")
         return
 
 
@@ -178,10 +161,15 @@ def login():
                         curs.execute(select, {'email1': email1, 'password':password})
 			
                         rows = curs.fetchall()
-                        print(rows)
                         if len(rows)>0:
                                 print("\nWelcome ", email1)
-                                return key
+                                select="select email FROM airline_agents WHERE (email=:email1)"
+                                curs.execute(select,{'email1':email1})
+                                rows=curs.fetchall()
+                                if len(rows)>0:
+                                        return 0
+                                else:
+                                        return key
                         else:
                                 print("\n Invalid email or password")
                                 do = input("To quit enter Q or any other key to try again: ")
@@ -206,10 +194,7 @@ def login():
 
 #Will connect to dbms
 #and login/logout is implemented
-def main():
-       
- 
-        
+def main(): 
         key = login() # 0 is stored in user if user is not an airline agent
         			   # 1 is stored in the user if the user IS an airline agent
 
@@ -219,46 +204,71 @@ def main():
                 cursInsert.close()
                 return
 
-	#if user == 0:       	 
-        while True:
+	#if user == 0:
+        key=int(key)       	 
+        while key>0:
                 print("\n1. Search for flights")
-                print("2. Make a booking")
-                print("3. List existing bookings")
-                print("4. Cancel a booking")
-                print("5. Logout")
+                print("2. List existing bookings")
+                print("3. Logout")
         
-                choice = input("Pick a choice between 1-5: ")
+                choice = input("Pick a choice between 1-3: ")
        
                 choice=int(choice) 
-                if choice==5:
+                if choice==3:
                         curs.prepare("UPDATE users SET last_login=SYSDATE where email=:email1")
                         curs.execute(None, {'email1': email1})
                                       
                         print("Have a nice day, Goodbye")
                         break
-                if choice ==3:
+                if choice ==2:
                        list_(email1, username)
 
                 if choice ==1:
                 	search()
 
-               	if choice ==2:
-               		book()
+                if (choice>3) or (choice<1):
+                        print("\nYour input is out of range! Enter a choice between 1 to 3")
+                   
+        while key==0:
+                print("\n1. Search for flights")
+                print("2. List existing bookings")
+                print("3. Logout")
+                print("4. Record a flight departure")
+                print("5. Record a fligh arrival")
+                choice = input("Pick a choice between 1-5: ")
 
-                if (choice>5) or (choice<1):
+                choice=int(choice)
+                if choice==3:
+                        curs.prepare("UPDATE users SET last_login=SYSDATE where email=:email1")
+                        curs.execute(None, {'email1': email1})
+
+                        print("Have a nice day, Goodbye")
+                        break
+                elif choice ==2:
+                       list_(email1, username)
+
+                elif choice ==1:
+                        search()
+
+                elif choice==4:
+                        record_dep()
+
+                elif choice==5:
+                        record_arr()
+			
+			
+                elif (choice>5) or (choice<1):
                         print("\nYour input is out of range! Enter a choice between 1 to 5")
-                     
-        
+
      		
          
         curs.close()
         cursInsert.close()	
 
 try:
-#	username = input("\n\nEnter the username for sql: ")
-#	password = input("Ener the password for sql: ")
-	connection = cx_Oracle.connect('imare/1!Afore6146a@gwynne.cs.ualberta.ca:1521/CRS')
-#	connection = cx_Oracle.connect('' +username+ '/' +password+'@gwynne.cs.ualberta.ca:1521/CRS')
+	username = input("\n\nEnter the username for sql: ")
+	password = input("Ener the password for sql: ")
+	connection = cx_Oracle.connect('' +username+ '/' +password+'@gwynne.cs.ualberta.ca:1521/CRS')
 	curs = connection.cursor()
 	cursInsert = connection.cursor()
 	main()
