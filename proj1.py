@@ -181,11 +181,52 @@ def cancel():
 
 #Janice Part
 
-
-def rec_departure():
-	return
-def rec_arrival():
-	return
+def rec_departure_arrival():
+     now = datetime.datetime.now()
+     d = now.date()
+     t = now.time()     
+     fno = input("Please enter the flight number: ")
+     dd = input("Please enter the departure date: ")     
+     updating = input("Would you like to record the departure or arrival? ")
+     auto = input("Would you like to auto-update? ")
+     if (updating == departure) or (updating == Departure) or (updating == D) or (updating == d):
+          if (auto == Yes) or (auto == yes) or (auto == y) or (auto == Y):
+               UPDATE sch_flights
+               SET act_dep_time = t
+               WHERE flightno == fno AND dep_date == dd
+               
+          else:
+               change_t = input("Would you like to change the time? ")
+               if (change_t == Yes) or (change_t == yes) or (change_t == Y) or (change_t == y):
+                    time = input("Please enter the new departure time: ")
+                    UPDATE sch_flights
+                    SET act_dep_time = time
+                    WHERE flightno == fno AND dep_date == dd
+               
+               else:
+                    change_d = input("Would you like to change the date? ")
+                    if (change_d == Yes) or (change_d == yes) or (change_d == Y) or (change_d == y):
+                         date = input("Please enter the new departure date: ")
+                         UPDATE sch_flights
+                         SET dep_date = date
+                         WHERE flightno == fno AND dep_date == dd             
+     
+     elif (updating == arrival) or (updating == Arrival) or (updating == A) or (updating == a):
+          if (auto == Yes) or (auto == yes) or (auto == y) or (auto == Y):
+               UPDATE sch_flights
+               SET act_arr_time = t
+               WHERE flightno == fno AND dep_date == dd
+          
+          else:
+               atime = input("Please enter the arrival time: ")
+               UPDATE sch_flights
+               SET act_arr_time = atime
+               WHERE flightno == fno AND dep_date == dd
+               
+     else:
+          print("Invalid, please try again. ")
+          continue
+          
 
 #-------------------------------------------------------
 
