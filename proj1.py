@@ -1,8 +1,8 @@
-# Assignment:           Proj 2
+# Assignment:           Mini Project 1
 # Due Date:             October, 27 2015
 # Name:                 Ismail Mare, Janice Loo, Preyanshu Kumar
-# Unix ID:              imare, preyansh --Add your unix ids!--
-# StudentID:            1388973, 1395321 --Add your sids!--
+# Unix ID:              imare, jloo, preyansh
+# StudentID:            1388973, 1359624, 1395321
 # Lecture Section:      B1
 # Instructor:           Davood Rafiei
 #---------------------------------------------------------------
