@@ -138,6 +138,7 @@ def list_(email, user):
         print("\n"*10)
         while True:
                #get your query of flights for the user and bind the email to the fed email
+               curs=connection.cursor()
                query="SELECT t.tno, t.name, s.dep_date, t.paid_price, b.fare, b.seat,  FROM tickets t, bookings b, passengers p, sch_flights s WHERE t.email=:email and t.tno=b.tno"
                curs.execute(query, {"email":email})
                rows=curs.fetchall()
@@ -155,13 +156,20 @@ def list_(email, user):
                        print(rows[choice][3])
                        print(rows[choice][4])
                        print(rows[choice][5])
+                       tno=(rows[choice][0])
                        #rows[choice]
                        if (choice>0):
                                rows=curs.fetchall()
                                print(rows)
+                               curs.close()
                                choice2=str(input("Do you wish to cancel this flight? Yes/No?"))
                                if choice2==("Yes"):
+                                       curs=connection.cursor()
                                        print ("Flight has been canceled")
+                                       query="DELETE from bookings b, tickets t WHERE b.tno= '%d' AND t.tno= '%d'" % (tno)
+                                       curs.execute(query)
+                                       connection.commit()
+                                       curs.close()
                                        print("Returning to Main Menu")
                                        return
                                else:
