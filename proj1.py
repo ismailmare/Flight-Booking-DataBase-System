@@ -166,7 +166,12 @@ def list_(email, user):
                                if choice2==("Yes"):
                                        curs=connection.cursor()
                                        print ("Flight has been canceled")
-                                       query="DELETE from bookings b, tickets t WHERE b.tno= '%d' AND t.tno= '%d'" % (tno)
+                                       query="DELETE from tickets t WHERE tno= '%d'" % (tno)
+                                       curs.execute(query)
+                                       connection.commit()
+                                       curs.close()
+                                       curs=connection.cursor()
+                                       query="DELETE from bookings, WHERE tno= '%d'" % (tno)
                                        curs.execute(query)
                                        connection.commit()
                                        curs.close()
