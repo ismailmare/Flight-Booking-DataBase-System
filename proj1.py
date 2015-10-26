@@ -194,14 +194,17 @@ def rec_departure_arrival():
                UPDATE sch_flights
                SET act_dep_time = t
                WHERE flightno == fno AND dep_date == dd
+               print("Auto-update successful. ")
                
           else:
+               #offer to change time first to reduce chances of errors if departure date was changed first
                change_t = input("Would you like to change the time? ")
                if (change_t == Yes) or (change_t == yes) or (change_t == Y) or (change_t == y):
                     time = input("Please enter the new departure time: ")
                     UPDATE sch_flights
                     SET act_dep_time = time
                     WHERE flightno == fno AND dep_date == dd
+                    print("Departure time updated. ")
                
                else:
                     change_d = input("Would you like to change the date? ")
@@ -209,23 +212,27 @@ def rec_departure_arrival():
                          date = input("Please enter the new departure date: ")
                          UPDATE sch_flights
                          SET dep_date = date
-                         WHERE flightno == fno AND dep_date == dd             
+                         WHERE flightno == fno AND dep_date == dd
+                         print("Departure date updated. ")
      
      elif (updating == arrival) or (updating == Arrival) or (updating == A) or (updating == a):
           if (auto == Yes) or (auto == yes) or (auto == y) or (auto == Y):
                UPDATE sch_flights
                SET act_arr_time = t
                WHERE flightno == fno AND dep_date == dd
+               print("Auto-update successful. ")
           
           else:
                atime = input("Please enter the arrival time: ")
                UPDATE sch_flights
                SET act_arr_time = atime
                WHERE flightno == fno AND dep_date == dd
+               print("Arrival time updated. ")
                
      else:
           print("Invalid, please try again. ")
           continue
+     
           
 
 #-------------------------------------------------------
