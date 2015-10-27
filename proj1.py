@@ -13,7 +13,7 @@ import cx_Oracle
 import sys
 import datetime
 import math
-
+import random
 
 
 
@@ -88,7 +88,7 @@ def search():
 
         dep_time1 = input("Enter the departure date as 'DD/MM/YYYY': ")	
         choice=input("Sort by number of connections? y/n: ")
-        select = "SELECT flightno,src,dst,dep_time,arr_time, price, seats from available_flights1 where to_char(dep_time,'DD/MM/YYYY')=:dep_time1 and src=:source and dst=:dest ORDER BY price"
+        select = "SELECT flightno,src,dst,dep_time,arr_time, price, seats,fare from available_flights1 where to_char(dep_time,'DD/MM/YYYY')=:dep_time1 and src=:source and dst=:dest ORDER BY price"
         curs.execute(select,{'source': source, 'dest':dest,'dep_time1':dep_time1})
         rows_direct=curs.fetchall()
 
@@ -111,13 +111,66 @@ def search():
                 choice=int(choice)
         except:
                 return
+        
 
+
+        name=input("\nEnter your Name: ")
+        name='{0: <20}'.format(name)
+        select = "select * from users, passengers where name=:name and users.email=passengers.email"
+        curs.execute(select,{'name':name})
+        rows=curs.fetchall()
+
+        if len(rows)==0:
+                country=input("Enter your country: ")
+                insert="insert into passengers(email,name,country) VALUES(:email,:name,:country)"
+                cursInsert.execute(insert,{'email':email1,'name':name,'country':country})
+                connection.commit()
+
+
+        tno=random.randint(1,1000000) 
+        tno1=random.randint(1,1000000)
         if choice<=len(rows_direct):
+                print(rows_direct[choice])
+                dep_date=rows_direct[choice][3]
                 flightno = rows_direct[choice][0]
+                price=rows_direct[choice][5]
+                seat=rows_direct[choice][6]
+                fare = rows_direct[choice][7]
+
+                insert="insert into tickets(tno,name,email,paid_price) VALUES(:tno,:name,:email,:price)"
+                cursInsert.execute(insert, {'name': name, 'tno': tno, 'email': email1,'price':price})
+                connection.commit()
+
+                insert="insert into bookings(tno,flightno,fare,dep_date,seat) VALUES(:tno,:flightno,:fare,TO_DATE(:dep_date,'DD/MM/YYYY'),NULL)"  
+                cursInsert.execute(insert,{'tno': tno,'flightno':flightno,'fare':fare,'dep_date':dep_time1})
+                connection.commit()
+
         elif choice>len(rows_direct):
                 flightno1= rows_connect[choice][0]
                 flightno2= rows_connect[choice][1]
-	
+		
+                dep_date=rows_direct[choice][4]
+                price=rows_direct[choice][6]
+
+                insert="insert into ticket(tno,name,email,paid_price) VALUES(:tno,:name,:email,:price)"
+                cursInsert.execute(insert, {'name': name, 'tno': tno, 'email': email,'price':price})
+                connection.commit()
+
+                insert="insert into bookings(tno,flightno,fare,dep_date,seat) VALUES(:tno,:flightno1,:fare,:dep_date,:seat"  
+                cursInsert.execute(insert,{'tno': tno,'flightno':flightno,'fare':fare,'dep_date':dep_date,'seat':seat})
+                connection.commit()
+		
+                tno=tno+1
+
+                insert="insert into ticket(tno,name,email,paid_price) VALUES(:tno,:name,:email,:price)"
+                cursInsert.execute(insert, {'name': name, 'tno': tno, 'email': email,'price':price})
+                connection.commit()
+
+                insert="insert into bookings(tno,flightno,fare,dep_date,seat) VALUES(:tno,:flightno1,NULL,:dep_date,NULL"          
+                cursInsert.execute(insert,{'tno': tno,'flightno':flightno,'dep_date':dep_date})
+                connection.commit()
+		
+        print("You have sucessfully booked this flight")	
         return
 
 
@@ -236,6 +289,7 @@ def login():
 #Will connect to dbms
 #and login/logout is implemented
 def main(): 
+        tno=1000
         key = login() # 0 is stored in user if user is not an airline agent
         			   # 1 is stored in the user if the user IS an airline agent
 
@@ -254,7 +308,11 @@ def main():
 
 
 	#if user == 0:
-        key=int(key)       	 
+        try:
+                key=int(key)       	  
+        except:
+                print("Not a valid option")
+                return
         while key>0:
                 print("\n1. Search for flights")
                 print("2. List existing bookings")
@@ -315,14 +373,14 @@ def main():
         cursInsert.close()	
 
 try:
-	username = input("\n\nEnter the username for sql: ")
-	password = input("Ener the password for sql: ")
-	connection = cx_Oracle.connect('' +username+ '/' +password+'@gwynne.cs.ualberta.ca:1521/CRS')
-	curs = connection.cursor()
-	cursInsert = connection.cursor()
-	main()
+        username = input("\n\nEnter the username for sql: ")
+        password = input("Ener the password for sql: ")
+        connection = cx_Oracle.connect('' +username+ '/' +password+'@gwynne.cs.ualberta.ca:1521/CRS')
+        curs = connection.cursor()
+        cursInsert = connection.cursor()
+        main()
 except cx_Oracle.DatabaseError as exc:
-	error, =exc.args
-	print( sys.stderr, "Oracle code:", error.code)
-	print( sys.stderr, "Oracle code:", error.message) 
+        error, =exc.args
+        print( sys.stderr, "Oracle code:", error.code)
+        print( sys.stderr, "Oracle code:", error.message) 
 
