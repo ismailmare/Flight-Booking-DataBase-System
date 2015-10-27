@@ -401,7 +401,7 @@ def list_delete(email, user):
                        return
                else:
                        for r in range(0,len(rows)):
-                               print (r,rows[r][r:-2])
+                               print (r,rows[r][:-2])
                        choice=input("Please select a Booking You would like to know more about: ")
                        choice=int(choice)
                        #print(rows[choice])
