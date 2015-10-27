@@ -192,7 +192,7 @@ def list_(email, user):
         while True:
                #get your query of flights for the user and bind the email to the fed email
                curs=connection.cursor()
-               query="SELECT t.tno, t.name, s.dep_date, t.paid_price, b.fare, b.seat,  FROM tickets t, bookings b, passengers p, sch_flights s WHERE t.email=:email and t.tno=b.tno"
+               query="SELECT b.tno, t.name, s.dep_date, t.paid_price, b.fare, b.seat,  FROM tickets t, bookings b, passengers p, sch_flights s WHERE t.email=:email and t.tno=b.tno"
                curs.execute(query, {"email":email})
                rows=curs.fetchall()
                if rows == "[]":
