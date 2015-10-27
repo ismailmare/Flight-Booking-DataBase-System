@@ -29,7 +29,7 @@ def search():
         while True:
             #checking for source
             source = input("\nEnter the source: ")
-       	    src=source
+       
             if len(source)==3:
                 source = source.upper()
                 select="SELECT acode FROM airports WHERE (acode = :source)"
@@ -51,28 +51,12 @@ def search():
                         print(rows[0][0] + ": " +rows[0][1])
                         source = input("\nPlease enter the source airport code: ")
                         source = source.upper()
-                
-                
-
-
                 else:
-                        source = src.title()
-                        select = "select acode,name from airports where name LIKE '%"+source+"%' or city LIKE '%"+source+"%'"
-                        curs.execute(select)
-                        rows = curs.fetchall()
-                        if len(rows)>0:
-                                print('\n')
-                                for i in range(len(rows)):
-                                        print(rows[i][0] + ": " +rows[i][1])
-                                source = input("\nPlease enter the source airport code: ")
-                                source = source.upper()	
-                        else:
-                                print("\nCould not find any flights MAIN MENU")
-                                return
+                    print("\nCould not find any flights MAIN MENU")
+                    return
                             
             #Checking for destination
-            dest = input("\nEnter the destination: ")
-            dst=dest
+            dest = input("\nEnter the destination: ")     
             if len(dest)==3:
                         dest = dest.upper()
                         select = "SELECT acode FROM airports WHERE (acode=:dest)"
@@ -99,32 +83,18 @@ def search():
                                 dest=input("\nPlease enter the destination airport code: ")
                                 dest = dest.upper()
                                 break
-
                         else:
-                                dest = dst.title()
-                                select = "select acode,name from airports where name LIKE '%"+dest+"%' or city LIKE '%"+dest+"%'"
-                                curs.execute(select)
-                                rows = curs.fetchall()
-                                if len(rows)>0:
-                                        print('\n')
-                                        for i in range(len(rows)):
-                                                print(rows[i][0] + ": " +rows[i][1])
-                                        dest = input("\nPlease enter the destination airport code: ")
-                                        dest = dest.upper()
-                                        break
-                                
-                                else:
-                                        print("\nCould not find any flights MAIN MENU")
-                                        return
-        
+                                print("\nCould not find any flights, MAIN MENU")
+                                return
+
+
         dep_time1 = input("\nEnter the departure date as 'DD/MM/YYYY': ")
         choice=input("\nSort by number of connections? y/n: ")
-        select = "SELECT flightno,src,dst, dep_time, arr_time, price, seats,fare from available_flights1 where to_char(dep_time,'DD/MM/YYYY')=:dep_time1 and src=:source and dst=:dest ORDER BY price"
+        select = "SELECT flightno,src,dst,dep_time,arr_time, price, seats,fare from available_flights1 where to_char(dep_time,'DD/MM/YYYY')=:dep_time1 and src=:source and dst=:dest ORDER BY price"
         curs.execute(select,{'source': source, 'dest':dest,'dep_time1':dep_time1})
         rows_direct=curs.fetchall()
 
-        select = "select flightno1, flightno2, src, dst, dep_date, arr_date, layover, price, seats from good_connections1 where to_char(dep_date,'DD/MM/YYYY')=:dep_time1 and src=:source and dst=:dest ORDER BY price, layover"
-        
+        select = "select flightno1, flightno2, src, dst, dep_date, layover,price from good_connections1 where to_char(dep_date,'DD/MM/YYYY')=:dep_time1 and src=:source and dst=:dest ORDER BY price, layover"
         curs.execute(select,{'source':source, 'dest': dest,'dep_time1':dep_time1})
         rows_connect= curs.fetchall()
 
@@ -134,19 +104,14 @@ def search():
                 x=x+1
 
         for i in range(len(rows_connect)): 
-                print("%s. %s" % (x, rows_connect[i]))	
+                print("%s. %s" % (x, rows_direct[i]))	
                 x=x+1
-
-        if x==0:
-                print('\nCould not find any flights, MAIN MENU') 
-                return
 
         choice=input("\nWhich flight would you like to book or Q to return to menu: ")
 
         try:
                 choice=int(choice)
         except:
-                print("\nNot valid integer")
                 return
         
 
@@ -166,7 +131,7 @@ def search():
 
         tno=random.randint(1,1000000) 
         if choice<=len(rows_direct):
-#                print(rows_direct[choice])
+                print(rows_direct[choice])
                 dep_date=rows_direct[choice][3]
                 flightno = rows_direct[choice][0]
                 price=rows_direct[choice][5]
@@ -177,7 +142,7 @@ def search():
                 curs.execute(select,{'source': source, 'dest':dest,'dep_time1':dep_time1})
                 rows_direct=curs.fetchall()
 
-#                print(rows_direct[choice][6])
+                print(rows_direct[choice][6])
                 if int(rows_direct[choice][6])==0:
                         print("\nSorry this flight has no seats available")
                         return
@@ -191,185 +156,41 @@ def search():
                 connection.commit()
 
         elif choice>len(rows_direct):
-
-                choice=choice-len(rows_direct)
-                select = "select flightno1, flightno2, src, dst, dep_date, layover,price,seats,arr_date,fare1,fare2 from good_connections1 where to_char(dep_date,'DD/MM/YYYY')=:dep_time1 and src=:source and dst=:dest ORDER BY price, layover"
+                tno1=random.randint(1,1000000)
+                flightno1= rows_connect[choice][0]
+                flightno2= rows_connect[choice][1]
+		
+                dep_date=rows_direct[choice][4]
+                price=rows_direct[choice][6]
+	
+                select = "select flightno1, flightno2, src, dst, dep_date, layover,price,seats from good_connections1 where to_char(dep_date,'DD/MM/YYYY')=:dep_time1 and src=:source and dst=:dest ORDER BY price, layover"
                 curs.execute(select,{'source':source, 'dest': dest,'dep_time1':dep_time1})
                 rows_connect= curs.fetchall()
                 if int(rows_connect[choice][7])==0:
                         print("\nSorry this flight has no seats available")
                         return
 
-                tno1=random.randint(1,1000000)
-                flightno1= rows_connect[choice][0]
-                flightno2= rows_connect[choice][1]
-                seat=rows_connect[choice][7]	
-                dep_date=rows_connect[choice][4]
-                price=rows_connect[choice][6]
-                fare1=rows_connect[choice][9]  
-                fare2=rows_connect[choice][10]
-	    
-
-                insert="insert into tickets(tno,name,email,paid_price) VALUES(:tno,:name,:email,:price)"
+                insert="insert into ticket(tno,name,email,paid_price) VALUES(:tno,:name,:email,:price)"
                 cursInsert.execute(insert, {'name': name, 'tno': tno, 'email': email1,'price':price})
                 connection.commit()
-        
-                insert="insert into tickets(tno,name,email,paid_price) VALUES(:tno,:name,:email,:price)"
+
+                insert="insert into bookings(tno,flightno,fare,dep_date,seat) VALUES(:tno,:flightno1,:fare,:dep_date,:seat"  
+                cursInsert.execute(insert,{'tno': tno,'flightno':flightno1,'fare':fare,'dep_date':dep_date,'seat':seat})
+                connection.commit()
+		
+                insert="insert into ticket(tno,name,email,paid_price) VALUES(:tno,:name,:email,:price)"
                 cursInsert.execute(insert, {'name': name, 'tno': tno1, 'email': email1,'price':price})
                 connection.commit()
 
-                insert="insert into bookings(tno,flightno,fare,dep_date,seat) VALUES(:tno,:flightno2,:fare,:dep_date,:seat)"          
-                cursInsert.execute(insert,{'tno': tno1,'flightno2':flightno2,'dep_date':dep_date,'seat':seat,'fare': fare2})
+                insert="insert into bookings(tno,flightno,fare,dep_date,seat) VALUES(:tno,:flightno1,NULL,:dep_date,NULL"          
+                cursInsert.execute(insert,{'tno': tno1,'flightno':flightno2,'dep_date':dep_date})
                 connection.commit()
-
-                insert="insert into bookings(tno,flightno,fare,dep_date,seat) VALUES(:tno,:flightno1,:fare,:dep_date,:seat)"  
-                cursInsert.execute(insert,{'tno': tno,'flightno1':flightno1,'fare':fare1,'dep_date':dep_date,'seat':seat})
-                connection.commit()
-	
-
 	
         try:
 	        print("Ticket Numbers: \n 1.%s \n 2.%s" %(tno1,tno)) 
         except:
                 print("\nTicket Number: %s" %(tno))
         print("You have sucessfully booked this flight")	
-
-
-
-        trip=input("\nWould you like to make this a round trip (y/n): ")
-        if trip=='n':
-                return
-        elif trip=='y':
-                temp=dest
-                dest=source 
-                source=temp
-  
-              
-                
-                dep_time1 = input("\nEnter the departure date as 'DD/MM/YYYY': ")	
-                choice=input("\nSort by number of connections? y/n: ")
-                select = "SELECT flightno,src,dst, dep_time, arr_time, price, seats,fare from available_flights1 where to_char(dep_time,'DD/MM/YYYY')=:dep_time1 and src=:source and dst=:dest ORDER BY price"
-                curs.execute(select,{'source': source, 'dest':dest,'dep_time1':dep_time1})
-                rows_direct=curs.fetchall()
-
-                select = "select flightno1, flightno2, src, dst, dep_date, arr_date, layover, price, seats from good_connections1 where to_char(dep_date,'DD/MM/YYYY')=:dep_time1 and src=:source and dst=:dest ORDER BY price, layover"
-        
-                curs.execute(select,{'source':source, 'dest': dest,'dep_time1':dep_time1})
-                rows_connect= curs.fetchall()
-
-                x=0
-                for i in range(len(rows_direct)):
-                        print("%s. %s" % (x, rows_direct[i]))
-                        x=x+1
-
-                for i in range(len(rows_connect)): 
-                        print("%s. %s" % (x, rows_connect[i]))	
-                        x=x+1
-
-                if x==0:
-                        print('\nCould not find any flights, MAIN MENU') 
-                        return
-
-                choice=input("\nWhich flight would you like to book or Q to return to menu: ")
-
-                try:
-                        choice=int(choice)
-                except:
-                        print("\nNot valid integer")
-                        return
-        
-
-	        #entering the user into the table
-                name=input("\nEnter your Name: ")
-                name='{0: <20}'.format(name)
-                select = "select * from users, passengers where name=:name and users.email=passengers.email"
-                curs.execute(select,{'name':name})
-                rows=curs.fetchall()
-
-                if len(rows)==0:
-                        country=input("Enter your country: ")
-                        insert="insert into passengers(email,name,country) VALUES(:email,:name,:country)"
-                        cursInsert.execute(insert,{'email':email1,'name':name,'country':country})
-                        connection.commit()
-
-
-                tno=random.randint(1,1000000) 
-                if choice<=len(rows_direct):
-#                print(rows_direct[choice])
-                        dep_date=rows_direct[choice][3]
-                        flightno = rows_direct[choice][0]
-                        price=rows_direct[choice][5]
-                        seat=rows_direct[choice][6]
-                        fare = rows_direct[choice][7]
-
-                        select = "SELECT flightno,src,dst,dep_time,arr_time, price, seats,fare from available_flights1 where to_char(dep_time,'DD/MM/YYYY')=:dep_time1 and src=:source and dst=:dest ORDER BY price"
-                        curs.execute(select,{'source': source, 'dest':dest,'dep_time1':dep_time1})
-                        rows_direct=curs.fetchall()
-
-#               print(rows_direct[choice][6])
-                        if int(rows_direct[choice][6])==0:
-                                print("\nSorry this flight has no seats available")
-                                return
-
-                        insert="insert into tickets(tno,name,email,paid_price) VALUES(:tno,:name,:email,:price)"
-                        cursInsert.execute(insert, {'name': name, 'tno': tno, 'email': email1,'price':price})
-                        connection.commit()
-
-                        insert="insert into bookings(tno,flightno,fare,dep_date,seat) VALUES(:tno,:flightno,:fare,TO_DATE(:dep_date,'DD/MM/YYYY'),:seat)"
-                        cursInsert.execute(insert,{'tno': tno,'flightno':flightno,'fare':fare,'dep_date':dep_time1,'seat':seat})
-                        connection.commit()
-
-                elif choice>len(rows_direct):
-
-                        choice=choice-len(rows_direct)
-                        select = "select flightno1, flightno2, src, dst, dep_date, layover,price,seats,arr_date,fare1,fare2 from good_connections1 where to_char(dep_date,'DD/MM/YYYY')=:dep_time1 and src=:source and dst=:dest ORDER BY price, layover"
-                        curs.execute(select,{'source':source, 'dest': dest,'dep_time1':dep_time1})
-                        rows_connect= curs.fetchall()
-                        if int(rows_connect[choice][7])==0:
-                                print("\nSorry this flight has no seats available")
-                                return
-
-                        tno1=random.randint(1,1000000)
-                        flightno1= rows_connect[choice][0]
-                        flightno2= rows_connect[choice][1]
-                        seat=rows_connect[choice][7]	
-                        dep_date=rows_connect[choice][4]
-                        price=rows_connect[choice][6]
-                        fare1=rows_connect[choice][9]  
-                        fare2=rows_connect[choice][10]
-	    
-
-                        insert="insert into tickets(tno,name,email,paid_price) VALUES(:tno,:name,:email,:price)"
-                        cursInsert.execute(insert, {'name': name, 'tno': tno, 'email': email1,'price':price})
-                        connection.commit()
-        
-                        insert="insert into tickets(tno,name,email,paid_price) VALUES(:tno,:name,:email,:price)"
-                        cursInsert.execute(insert, {'name': name, 'tno': tno1, 'email': email1,'price':price})
-                        connection.commit()
-
-                        insert="insert into bookings(tno,flightno,fare,dep_date,seat) VALUES(:tno,:flightno2,:fare,:dep_date,:seat)"          
-                        cursInsert.execute(insert,{'tno': tno1,'flightno2':flightno2,'dep_date':dep_date,'seat':seat,'fare': fare2})
-                        connection.commit()
-
-                        insert="insert into bookings(tno,flightno,fare,dep_date,seat) VALUES(:tno,:flightno1,:fare,:dep_date,:seat)"  
-                        cursInsert.execute(insert,{'tno': tno,'flightno1':flightno1,'fare':fare1,'dep_date':dep_date,'seat':seat})
-                        connection.commit()
-	
-
-	
-                try:
-	                print("Ticket Numbers: \n 1.%s \n 2.%s" %(tno1,tno)) 
-                except:
-                        print("\nTicket Number: %s" %(tno))
-                print("You have sucessfully booked this flight")	
-                return
-
-                  
-
-        else: 
-                print("\nDefult return to main menu")
-                return
-
         return
 
 
@@ -420,12 +241,12 @@ def list_delete(email, user):
                                if choice2==("Yes"):
                                        curs=connection.cursor()
                                        print ("Flight has been canceled")
-                                       query="DELETE from tickets t WHERE tno= '%d'" % (tno)
+                                       query="DELETE from tickets WHERE tno= '%d'" % (tno)
                                        curs.execute(query)
                                        connection.commit()
                                        curs.close()
                                        curs=connection.cursor()
-                                       query="DELETE from bookings, WHERE tno= '%d'" % (tno)
+                                       query="DELETE from bookings WHERE tno= '%d'" % (tno)
                                        curs.execute(query)
                                        connection.commit()
                                        curs.close()
@@ -586,7 +407,7 @@ def main():
 #create views
         curs.execute("create view available_flights1 (flightno,dep_date, src,dst,dep_time,arr_time,fare,seats,price) as select f.flightno, sf.dep_date, f.src, f.dst, f.dep_time+(trunc(sf.dep_date)-trunc(f.dep_time)), f.dep_time+(trunc(sf.dep_date)-trunc(f.dep_time))+(f.est_dur/60+a2.tzone-a1.tzone)/24,fa.fare, fa.limit-count(tno), fa.price from flights f, flight_fares fa, sch_flights sf, bookings b, airports a1, airports a2 where f.flightno=sf.flightno and f.flightno=fa.flightno and f.src=a1.acode and f.dst=a2.acode and fa.flightno=b.flightno(+) and fa.fare=b.fare(+) and sf.dep_date=b.dep_date(+) group by f.flightno, sf.dep_date, f.src, f.dst, f.dep_time, f.est_dur,a2.tzone,a1.tzone, fa.fare, fa.limit, fa.price having fa.limit-count(tno) > 0")
 
-        curs.execute("create view good_connections1 (src,dst,dep_date,flightno1,flightno2,layover,price,seats,arr_date,fare1,fare2) as select a1.src, a2.dst, a1.dep_date, a1.flightno, a2.flightno, a2.dep_time-a1.arr_time,min(a1.price+a2.price),min(a1.seats+a2.seats), a2.arr_time, a1.fare, a2.fare from available_flights1 a1, available_flights1 a2 where a1.dst=a2.src and a1.arr_time +1.5/24 <=a2.dep_time and a1.arr_time +5/24 >=a2.dep_time group by a1.src, a2.dst, a1.dep_date, a1.flightno, a2.flightno, a2.dep_time, a1.arr_time,a2.arr_time,a1.fare,a2.fare")
+        curs.execute("create view good_connections1 (src,dst,dep_date,flightno1,flightno2,layover,price,seats) as select a1.src, a2.dst, a1.dep_date, a1.flightno, a2.flightno, a2.dep_time-a1.arr_time,min(a1.price+a2.price),min(a1.seats+a2.seats) from available_flights1 a1, available_flights1 a2 where a1.dst=a2.src and a1.arr_time +1.5/24 <=a2.dep_time and a1.arr_time +5/24 >=a2.dep_time group by a1.src, a2.dst, a1.dep_date, a1.flightno, a2.flightno, a2.dep_time, a1.arr_time")
 
 
 
