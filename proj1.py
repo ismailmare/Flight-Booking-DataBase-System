@@ -1,8 +1,8 @@
-# Assignment:           Proj 2
+# Assignment:           Mini Project 1
 # Due Date:             October, 27 2015
 # Name:                 Ismail Mare, Janice Loo, Preyanshu Kumar
-# Unix ID:              imare, preyansh --Add your unix ids!--
-# StudentID:            1388973, 1395321 --Add your sids!--
+# Unix ID:              imare, jloo, preyansh
+# StudentID:            1388973, 1359624, 1395321
 # Lecture Section:      B1
 # Instructor:           Davood Rafiei
 #---------------------------------------------------------------
@@ -185,35 +185,60 @@ def bookings():
 #----------------------------------------------------------
 #Preyanshu Part        
 #List existing bookings. A user should be able to list all his/her existing bookings. The result will be given in a list form and will include for each booking, the ticket number, the passCancel a booking. The user should be able to select a booking from those listed under "list existing bookings" and cancel it. The proper tables should be updated to reflect the cancelation and the cancelled seat should be returned to the system and is made available for future bookings.enger name, the departure date and the price. The user should be able to select a row and get more detailed information about the booking.
+#Cancel a booking. The user should be able to select a booking from those listed under "list existing bookings" and cancel it. The proper tables should be updated to reflect the cancelation and the cancelled seat should be returned to the system and is made available for future bookings. Theoretically these can both be done within the same output, you just have to delete that line from the code.
+
 def list_(email, user):
         print("\n"*10)
         while True:
-               query="SELECT t.tno, t.name, s.dep_date, t.paid_price FROM tickets t, bookings b, passengers p, sch_flights s WHERE t.email=:email and t.tno=b.tno"
+               #get your query of flights for the user and bind the email to the fed email
+               curs=connection.cursor()
+               query="SELECT t.tno, t.name, s.dep_date, t.paid_price, b.fare, b.seat,  FROM tickets t, bookings b, passengers p, sch_flights s WHERE t.email=:email and t.tno=b.tno"
                curs.execute(query, {"email":email})
                rows=curs.fetchall()
                if rows == "[]":
                        print("No Bookings Find, Please Book a Flight, Returning to Main Menu")
-                       break
+                       return
                else:
                        for r in range(0,len(rows)):
-                               print (r,rows[r:-3])
+                               print (r,rows[r:-2])
                        choice=input("Please select a Booking You would like to know more about")
                        choice=int(choice)
+                       print(rows[choice])
+                       print(rows[choice][1])
+                       print(rows[choice][2])
+                       print(rows[choice][3])
+                       print(rows[choice][4])
+                       print(rows[choice][5])
+                       tno=(rows[choice][0])
+                       #rows[choice]
                        if (choice>0):
-                               rows=curs.fetchone()
+                               rows=curs.fetchall()
                                print(rows)
+                               curs.close()
                                choice2=str(input("Do you wish to cancel this flight? Yes/No?"))
                                if choice2==("Yes"):
-                                    print ("Flight has been canceled")    
+                                       curs=connection.cursor()
+                                       print ("Flight has been canceled")
+                                       query="DELETE from tickets t WHERE tno= '%d'" % (tno)
+                                       curs.execute(query)
+                                       connection.commit()
+                                       curs.close()
+                                       curs=connection.cursor()
+                                       query="DELETE from bookings, WHERE tno= '%d'" % (tno)
+                                       curs.execute(query)
+                                       connection.commit()
+                                       curs.close()
+                                       print("Returning to Main Menu")
+                                       return
+                               else:
+                                       print("Returning to Main Menu")
+                                       return
+                       else if (choice.isalpha()):
+                               print("Invalid Input, Please enter a Number!")
+                               break
                        else:
                                print("No bookings chosen, return to main menu")
-                               break
-                                
-        return
-
-#Cancel a booking. The user should be able to select a booking from those listed under "list existing bookings" and cancel it. The proper tables should be updated to reflect the cancelation and the cancelled seat should be returned to the system and is made available for future bookings.
-def cancel():
-        print("\n"*10)
+                               return
         return
         
         
@@ -221,11 +246,55 @@ def cancel():
 
 #Janice Part
 
-
-def rec_departure():
-	return
-def rec_arrival():
-	return
+def rec_departure_arrival(): 
+     fno = input("Please enter the flight number: ")
+     dd = input("Please enter the departure date: ")     
+     updating = input("Would you like to record the departure or arrival? ")
+     auto = input("Would you like to auto-update? ")
+     if (updating == departure) or (updating == Departure) or (updating == D) or (updating == d):
+          if (auto == Yes) or (auto == yes) or (auto == y) or (auto == Y):
+               update = "UPDATE sch_flights SET act_dep_time = TO_CHAR(SYSDATE, HH24:MI:SS) WHERE flightno == :fno AND dep_date == :dd"
+               curs.execute(update,{'fno':fno, 'dd':dd})
+               print("Auto-update successful. ")
+               
+          else:
+               #offer to change time first to reduce chances of errors if departure date was changed first
+               change_t = input("Would you like to change the time? ")
+               if (change_t == Yes) or (change_t == yes) or (change_t == Y) or (change_t == y):
+                    time = input("Please enter the new departure time (HH24:MI:SS): ")
+                    update = "UPDATE sch_flights SET act_dep_time = time WHERE flightno == fno AND dep_date == dd"
+                    curs.execute(update,{'time':time, 'fno':fno, 'dd':dd})
+                    print("Departure time updated. ")
+               
+               else:
+                    change_d = input("Would you like to change the date? ")
+                    if (change_d == Yes) or (change_d == yes) or (change_d == Y) or (change_d == y):
+                         date = input("Please enter the new departure date (DD/MM/YYYY): ")
+                         update = "UPDATE sch_flights SET dep_date = date WHERE flightno == fno AND dep_date == dd"
+                         curs.execute(update,{'date':date, 'fno':fno, 'dd':dd})
+                         print("Departure date updated. ")
+                    else:
+                         return
+     
+     elif (updating == arrival) or (updating == Arrival) or (updating == A) or (updating == a):
+          if (auto == Yes) or (auto == yes) or (auto == y) or (auto == Y):
+               update = "UPDATE sch_flights SET act_arr_time = TO_CHAR(SYSDATE, HH24:MI:SS) WHERE flightno == fno AND dep_date == dd"
+               curs.execute(update,{'fno':fno, 'dd':dd})
+               print("Auto-update successful. ")
+          
+          else:
+               atime = input("Please enter the arrival time (HH24:MI:ss): ")
+               update = "UPDATE sch_flights SET act_arr_time = atime WHERE flightno == fno AND dep_date == dd"
+               curs.execute(update,{'atime':atime, 'fno':fno, 'dd':dd})
+               print("Arrival time updated. ")
+               
+     else:
+          print("Invalid, please try again. ")
+          return
+     
+     return
+     
+          
 
 #-------------------------------------------------------
 
