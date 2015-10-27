@@ -89,6 +89,7 @@ def search():
 
 
         dep_time1 = input("\nEnter the departure date as 'DD/MM/YYYY': ")
+        #change added by Preyanshu, if this doesnt work feel free to take it out :D
 	dep_time1 = str(dep_time1)
         choice=input("\nSort by number of connections? y/n: ")
         select = "SELECT flightno,src,dst,dep_time,arr_time, price, seats,fare from available_flights1 where to_char(dep_time,'DD/MM/YYYY')=:dep_time1 and src=:source and dst=:dest ORDER BY price"
@@ -434,6 +435,7 @@ def main():
                         print("\nHave a nice day, Goodbye")
                         break
                 if choice ==2:
+                       curs.prepare("UPDATE users SET last_login=SYSDATE where email=:email1")
                        list_delete(email1, username)
 
                 if choice ==1:
