@@ -15,6 +15,7 @@ import datetime
 import math
 import random
 import time
+import string
 
 
 #----------------------------------------------------
@@ -116,7 +117,7 @@ def search():
                                         print("\nCould not find any flights MAIN MENU")
                                         return
         
-        dep_time1 = input("\nEnter the departure date as 'DD/MM/YYYY': ")	
+        dep_time1 = input("\nEnter the departure date as 'DD/MM/YYYY': ")
         choice=input("\nSort by number of connections? y/n: ")
         select = "SELECT flightno,src,dst, dep_time, arr_time, price, seats,fare from available_flights1 where to_char(dep_time,'DD/MM/YYYY')=:dep_time1 and src=:source and dst=:dest ORDER BY price"
         curs.execute(select,{'source': source, 'dest':dest,'dep_time1':dep_time1})
@@ -387,6 +388,7 @@ def bookings():
 
 def list_delete(email, user):
         print("\n"*10)
+        connection.commit()
         while True:
                #get your query of flights for the user and bind the email to the fed email
                curs=connection.cursor()
@@ -402,7 +404,7 @@ def list_delete(email, user):
                                print (r,rows[r][r:-2])
                        choice=input("Please select a Booking You would like to know more about: ")
                        choice=int(choice)
-                       print(rows[choice])
+                       #print(rows[choice])
                        print(rows[choice][1])
                        print(rows[choice][2])
                        print(rows[choice][3])
@@ -414,7 +416,7 @@ def list_delete(email, user):
                                rows=curs.fetchall()
                                print(rows)
                                curs.close()
-                               choice2=str(input("Do you wish to cancel this flight? Yes/No?"))
+                               choice2=str(input("Do you wish to cancel this flight? Yes/No? "))
                                if choice2==("Yes"):
                                        curs=connection.cursor()
                                        print ("Flight has been canceled")
@@ -436,7 +438,7 @@ def list_delete(email, user):
                                print("Invalid Input, Please enter a Number!")
                                break
                        else:
-                               print("No bookings chosen, return to main menu")
+                               print("\nNo bookings chosen, return to main menu")
                                return
         return
      
@@ -610,6 +612,7 @@ def main():
                         print("\nHave a nice day, Goodbye")
                         break
                 if choice ==2:
+                       curs.prepare("UPDATE users SET last_login=SYSDATE where email=:email1")
                        list_delete(email1, username)
 
                 if choice ==1:
