@@ -14,7 +14,7 @@ import sys
 import datetime
 import math
 import random
-
+import time
 
 
 #----------------------------------------------------
@@ -26,7 +26,8 @@ import random
 # not complete
 def search():
         while True:
-            source = input("Enter the source: ")
+            #checking for source
+            source = input("\nEnter the source: ")
        
             if len(source)==3:
                 source = source.upper()
@@ -53,7 +54,7 @@ def search():
                     print("\nCould not find any flights MAIN MENU")
                     return
                             
-            
+            #Checking for destination
             dest = input("\nEnter the destination: ")     
             if len(dest)==3:
                         dest = dest.upper()
@@ -86,8 +87,8 @@ def search():
                                 return
 
 
-        dep_time1 = input("Enter the departure date as 'DD/MM/YYYY': ")	
-        choice=input("Sort by number of connections? y/n: ")
+        dep_time1 = input("\nEnter the departure date as 'DD/MM/YYYY': ")	
+        choice=input("\nSort by number of connections? y/n: ")
         select = "SELECT flightno,src,dst,dep_time,arr_time, price, seats,fare from available_flights1 where to_char(dep_time,'DD/MM/YYYY')=:dep_time1 and src=:source and dst=:dest ORDER BY price"
         curs.execute(select,{'source': source, 'dest':dest,'dep_time1':dep_time1})
         rows_direct=curs.fetchall()
@@ -113,7 +114,7 @@ def search():
                 return
         
 
-
+	#entering the user into the table
         name=input("\nEnter your Name: ")
         name='{0: <20}'.format(name)
         select = "select * from users, passengers where name=:name and users.email=passengers.email"
@@ -128,7 +129,6 @@ def search():
 
 
         tno=random.randint(1,1000000) 
-        tno1=random.randint(1,1000000)
         if choice<=len(rows_direct):
                 print(rows_direct[choice])
                 dep_date=rows_direct[choice][3]
@@ -137,39 +137,58 @@ def search():
                 seat=rows_direct[choice][6]
                 fare = rows_direct[choice][7]
 
+                select = "SELECT flightno,src,dst,dep_time,arr_time, price, seats,fare from available_flights1 where to_char(dep_time,'DD/MM/YYYY')=:dep_time1 and src=:source and dst=:dest ORDER BY price"
+                curs.execute(select,{'source': source, 'dest':dest,'dep_time1':dep_time1})
+                rows_direct=curs.fetchall()
+
+                print(rows_direct[choice][6])
+                if int(rows_direct[choice][6])==0:
+                        print("\nSorry this flight has no seats available")
+                        return
+
                 insert="insert into tickets(tno,name,email,paid_price) VALUES(:tno,:name,:email,:price)"
                 cursInsert.execute(insert, {'name': name, 'tno': tno, 'email': email1,'price':price})
                 connection.commit()
 
-                insert="insert into bookings(tno,flightno,fare,dep_date,seat) VALUES(:tno,:flightno,:fare,TO_DATE(:dep_date,'DD/MM/YYYY'),NULL)"  
-                cursInsert.execute(insert,{'tno': tno,'flightno':flightno,'fare':fare,'dep_date':dep_time1})
+                insert="insert into bookings(tno,flightno,fare,dep_date,seat) VALUES(:tno,:flightno,:fare,TO_DATE(:dep_date,'DD/MM/YYYY'),:seat)"
+                cursInsert.execute(insert,{'tno': tno,'flightno':flightno,'fare':fare,'dep_date':dep_time1,'seat':seat})
                 connection.commit()
 
         elif choice>len(rows_direct):
+                tno1=random.randint(1,1000000)
                 flightno1= rows_connect[choice][0]
                 flightno2= rows_connect[choice][1]
 		
                 dep_date=rows_direct[choice][4]
                 price=rows_direct[choice][6]
+	
+                select = "select flightno1, flightno2, src, dst, dep_date, layover,price,seats from good_connections1 where to_char(dep_date,'DD/MM/YYYY')=:dep_time1 and src=:source and dst=:dest ORDER BY price, layover"
+                curs.execute(select,{'source':source, 'dest': dest,'dep_time1':dep_time1})
+                rows_connect= curs.fetchall()
+                if int(rows_connect[choice][7])==0:
+                        print("\nSorry this flight has no seats available")
+                        return
 
                 insert="insert into ticket(tno,name,email,paid_price) VALUES(:tno,:name,:email,:price)"
-                cursInsert.execute(insert, {'name': name, 'tno': tno, 'email': email,'price':price})
+                cursInsert.execute(insert, {'name': name, 'tno': tno, 'email': email1,'price':price})
                 connection.commit()
 
                 insert="insert into bookings(tno,flightno,fare,dep_date,seat) VALUES(:tno,:flightno1,:fare,:dep_date,:seat"  
-                cursInsert.execute(insert,{'tno': tno,'flightno':flightno,'fare':fare,'dep_date':dep_date,'seat':seat})
+                cursInsert.execute(insert,{'tno': tno,'flightno':flightno1,'fare':fare,'dep_date':dep_date,'seat':seat})
                 connection.commit()
 		
-                tno=tno+1
-
                 insert="insert into ticket(tno,name,email,paid_price) VALUES(:tno,:name,:email,:price)"
-                cursInsert.execute(insert, {'name': name, 'tno': tno, 'email': email,'price':price})
+                cursInsert.execute(insert, {'name': name, 'tno': tno1, 'email': email1,'price':price})
                 connection.commit()
 
                 insert="insert into bookings(tno,flightno,fare,dep_date,seat) VALUES(:tno,:flightno1,NULL,:dep_date,NULL"          
-                cursInsert.execute(insert,{'tno': tno,'flightno':flightno,'dep_date':dep_date})
+                cursInsert.execute(insert,{'tno': tno1,'flightno':flightno2,'dep_date':dep_date})
                 connection.commit()
-		
+	
+        try:
+	        print("Ticket Numbers: \n 1.%s \n 2.%s" %(tno1,tno)) 
+        except:
+                print("\nTicket Number: %s" %(tno))
         print("You have sucessfully booked this flight")	
         return
 
@@ -187,21 +206,22 @@ def bookings():
 #List existing bookings. A user should be able to list all his/her existing bookings. The result will be given in a list form and will include for each booking, the ticket number, the passCancel a booking. The user should be able to select a booking from those listed under "list existing bookings" and cancel it. The proper tables should be updated to reflect the cancelation and the cancelled seat should be returned to the system and is made available for future bookings.enger name, the departure date and the price. The user should be able to select a row and get more detailed information about the booking.
 #Cancel a booking. The user should be able to select a booking from those listed under "list existing bookings" and cancel it. The proper tables should be updated to reflect the cancelation and the cancelled seat should be returned to the system and is made available for future bookings. Theoretically these can both be done within the same output, you just have to delete that line from the code.
 
-def list_(email, user):
+def list_delete(email, user):
         print("\n"*10)
         while True:
                #get your query of flights for the user and bind the email to the fed email
                curs=connection.cursor()
-               query="SELECT b.tno, t.name, s.dep_date, t.paid_price, b.fare, b.seat,  FROM tickets t, bookings b, passengers p, sch_flights s WHERE t.email=:email and t.tno=b.tno"
+               query="SELECT t.tno, t.name, b.dep_date, t.paid_price, b.fare, b.seat FROM tickets t, bookings b  WHERE t.email=:email and t.tno=b.tno"
                curs.execute(query, {"email":email})
                rows=curs.fetchall()
-               if rows == "[]":
+               print(len(rows))
+               if rows == []:
                        print("No Bookings Find, Please Book a Flight, Returning to Main Menu")
                        return
                else:
                        for r in range(0,len(rows)):
-                               print (r,rows[r:-2])
-                       choice=input("Please select a Booking You would like to know more about")
+                               print (r,rows[r][r:-2])
+                       choice=input("Please select a Booking You would like to know more about: ")
                        choice=int(choice)
                        print(rows[choice])
                        print(rows[choice][1])
@@ -233,63 +253,74 @@ def list_(email, user):
                                else:
                                        print("Returning to Main Menu")
                                        return
-                       else if (choice.isalpha()):
+                       elif (choice.isalpha()):
                                print("Invalid Input, Please enter a Number!")
                                break
                        else:
                                print("No bookings chosen, return to main menu")
                                return
         return
-        
+     
         
 #-------------------------------------------------------
 
 #Janice Part
 
 def rec_departure_arrival(): 
-     fno = input("Please enter the flight number: ")
-     dd = input("Please enter the departure date: ")     
-     updating = input("Would you like to record the departure or arrival? ")
-     auto = input("Would you like to auto-update? ")
-     if (updating == departure) or (updating == Departure) or (updating == D) or (updating == d):
-          if (auto == Yes) or (auto == yes) or (auto == y) or (auto == Y):
-               update = "UPDATE sch_flights SET act_dep_time = TO_CHAR(SYSDATE, HH24:MI:SS) WHERE flightno == :fno AND dep_date == :dd"
+     fno = input("\nPlease enter the flight number: ")
+     fno='{0: <6}'.format(fno)
+     dd = input("\nPlease enter the departure date(DD/MM/YYYY): ")
+
+     select="select * from sch_flights where flightno=:fno and dep_date=to_date(:dd,'DD/MM/YYYY')"
+     curs.execute(select,{'fno': fno,'dd':dd})
+     rows=curs.fetchall()
+     if len(rows)==0:
+         print("\nSorry no flights found")
+         return
+ #info from user/agent
+     updating = input("\nWould you like to record the departure or arrival? ")
+     auto = input("\nWould you like to auto-update? ")
+     if (updating == 'departure') or (updating == 'Departure') or (updating == 'D') or (updating == 'd'):
+          if (auto == 'Yes') or (auto == 'yes') or (auto == 'y') or (auto == 'Y'):
+               update = "UPDATE sch_flights SET act_dep_time=SYSDATE WHERE flightno=:fno AND dep_date=to_date(:dd,'DD/MM/YYYY')"
                curs.execute(update,{'fno':fno, 'dd':dd})
-               print("Auto-update successful. ")
+               print("\nAuto-update successful. ")
                
           else:
                #offer to change time first to reduce chances of errors if departure date was changed first
-               change_t = input("Would you like to change the time? ")
-               if (change_t == Yes) or (change_t == yes) or (change_t == Y) or (change_t == y):
-                    time = input("Please enter the new departure time (HH24:MI:SS): ")
-                    update = "UPDATE sch_flights SET act_dep_time = time WHERE flightno == fno AND dep_date == dd"
+               change_t = input("\nWould you like to change the time? ")
+               if (change_t == 'Yes') or (change_t == 'yes') or (change_t == 'Y') or (change_t == 'y'):
+                    time = input("\nPlease enter the new departure time (DD-MM-YYYY HH24:MI:SS): ")
+                    update = "UPDATE sch_flights SET act_dep_time = to_date(:time,'DD-MM-YYYY HH24:MI:SS') WHERE flightno=:fno AND dep_date =to_date(:dd,'DD/MM/YYYY')"
                     curs.execute(update,{'time':time, 'fno':fno, 'dd':dd})
-                    print("Departure time updated. ")
+                    print("\nDeparture time updated. ")
                
                else:
-                    change_d = input("Would you like to change the date? ")
-                    if (change_d == Yes) or (change_d == yes) or (change_d == Y) or (change_d == y):
-                         date = input("Please enter the new departure date (DD/MM/YYYY): ")
-                         update = "UPDATE sch_flights SET dep_date = date WHERE flightno == fno AND dep_date == dd"
+                    change_d = input("\nWould you like to change the date? ")
+                    if (change_d == 'Yes') or (change_d == 'yes') or (change_d == 'Y') or (change_d == 'y'):
+                         date = input("\nPlease enter the new departure date (DD/MM/YYYY): ")
+                         update = "UPDATE sch_flights SET dep_date = to_char(:date,'DD/MM/YYYY') WHERE flightno=:fno AND dep_date=to_date(:dd,'DD/MM/YYYY')"
                          curs.execute(update,{'date':date, 'fno':fno, 'dd':dd})
-                         print("Departure date updated. ")
+                         print("\nDeparture date updated. ")
                     else:
                          return
-     
-     elif (updating == arrival) or (updating == Arrival) or (updating == A) or (updating == a):
-          if (auto == Yes) or (auto == yes) or (auto == y) or (auto == Y):
-               update = "UPDATE sch_flights SET act_arr_time = TO_CHAR(SYSDATE, HH24:MI:SS) WHERE flightno == fno AND dep_date == dd"
+#If want to update the arrivals automatically     
+     elif (updating == 'arrival') or (updating == 'Arrival') or (updating == 'A') or (updating == 'a'):
+          if (auto == 'Yes') or (auto == 'yes') or (auto == 'y') or (auto == 'Y'):
+               update = "UPDATE sch_flights SET act_arr_time=SYSDATE WHERE flightno = :fno AND dep_date=to_date(:dd,'DD/MM/YYYY')"
                curs.execute(update,{'fno':fno, 'dd':dd})
-               print("Auto-update successful. ")
-          
+               print("\nAuto-update successful. ")
+   
+#if want to update the arrivals (enter explicitly)
           else:
-               atime = input("Please enter the arrival time (HH24:MI:ss): ")
-               update = "UPDATE sch_flights SET act_arr_time = atime WHERE flightno == fno AND dep_date == dd"
+               atime = input("\nPlease enter the arrival time (DD-MM-YYYY HH24:MI:SS): ")
+               update = "UPDATE sch_flights SET act_arr_time = to_date(:atime,'DD-MM-YYYY HH24:MI:SS') WHERE flightno=:fno AND dep_date=to_date(:dd,'DD/MM/YYYY')"
                curs.execute(update,{'atime':atime, 'fno':fno, 'dd':dd})
-               print("Arrival time updated. ")
-               
+               print("\nArrival time updated. ")
+          
+#invalid entry
      else:
-          print("Invalid, please try again. ")
+          print("\nInvalid, please try again. ")
           return
      
      return
@@ -309,16 +340,18 @@ def login():
         print("3. Enter 3 to exit\n")
         key = input("Please choose an option: ")
         
+#keys represent the value returned by user. 3 is quit
         if (key =='3'):
                 return key
+#returning user
         elif (key =='1'):
                 
                 while True:
-                        global email1
-                        global password
+                        global email1 # need globals so every function can use email1
+                        global password # same thing here
                         email1 = input("\nPlease enter your email: ")
                         password = input("\nPlease enter your password: ")
-                        email1='{0: <20}'.format(email1)
+                        email1='{0: <20}'.format(email1)   			#format based on sql char(size)
                         password='{0: <4}'.format(password)
                         select="SELECT email FROM users WHERE (email=:email1) and (pass=:password)"
                         curs.execute(select, {'email1': email1, 'password':password})
@@ -334,11 +367,11 @@ def login():
                                 else:
                                         return key
                         else:
-                                print("\n Invalid email or password")
+                                print("\n Invalid email or password")    # Error handling
                                 do = input("To quit enter Q or any other key to try again: ")
                                 if (do =='q') or (do =='Q'):
                                         return '3'
-                        
+        #new user register                
         elif (key =='2'):
                 email1 = input("\nPlease enter your email: ")
                 password = input("\nPlease enter your password: ") 
@@ -369,10 +402,10 @@ def main():
                 return
         curs.execute("drop view available_flights1")
         curs.execute("drop view good_connections1")
-
+#create views
         curs.execute("create view available_flights1 (flightno,dep_date, src,dst,dep_time,arr_time,fare,seats,price) as select f.flightno, sf.dep_date, f.src, f.dst, f.dep_time+(trunc(sf.dep_date)-trunc(f.dep_time)), f.dep_time+(trunc(sf.dep_date)-trunc(f.dep_time))+(f.est_dur/60+a2.tzone-a1.tzone)/24,fa.fare, fa.limit-count(tno), fa.price from flights f, flight_fares fa, sch_flights sf, bookings b, airports a1, airports a2 where f.flightno=sf.flightno and f.flightno=fa.flightno and f.src=a1.acode and f.dst=a2.acode and fa.flightno=b.flightno(+) and fa.fare=b.fare(+) and sf.dep_date=b.dep_date(+) group by f.flightno, sf.dep_date, f.src, f.dst, f.dep_time, f.est_dur,a2.tzone,a1.tzone, fa.fare, fa.limit, fa.price having fa.limit-count(tno) > 0")
 
-        curs.execute("create view good_connections1 (src,dst,dep_date,flightno1,flightno2, layover,price) as select a1.src, a2.dst, a1.dep_date, a1.flightno, a2.flightno, a2.dep_time-a1.arr_time,min(a1.price+a2.price) from available_flights1 a1, available_flights1 a2 where a1.dst=a2.src and a1.arr_time +1.5/24 <=a2.dep_time and a1.arr_time +5/24 >=a2.dep_time group by a1.src, a2.dst, a1.dep_date, a1.flightno, a2.flightno, a2.dep_time, a1.arr_time")
+        curs.execute("create view good_connections1 (src,dst,dep_date,flightno1,flightno2,layover,price,seats) as select a1.src, a2.dst, a1.dep_date, a1.flightno, a2.flightno, a2.dep_time-a1.arr_time,min(a1.price+a2.price),min(a1.seats+a2.seats) from available_flights1 a1, available_flights1 a2 where a1.dst=a2.src and a1.arr_time +1.5/24 <=a2.dep_time and a1.arr_time +5/24 >=a2.dep_time group by a1.src, a2.dst, a1.dep_date, a1.flightno, a2.flightno, a2.dep_time, a1.arr_time")
 
 
 
@@ -382,6 +415,7 @@ def main():
         except:
                 print("Not a valid option")
                 return
+        #choices for regular user
         while key>0:
                 print("\n1. Search for flights")
                 print("2. List existing bookings")
@@ -394,17 +428,17 @@ def main():
                         curs.prepare("UPDATE users SET last_login=SYSDATE where email=:email1")
                         curs.execute(None, {'email1': email1})
                                       
-                        print("Have a nice day, Goodbye")
+                        print("\nHave a nice day, Goodbye")
                         break
                 if choice ==2:
-                       list_(email1, username)
+                       list_delete(email1, username)
 
                 if choice ==1:
                 	search()
 
                 if (choice>3) or (choice<1):
                         print("\nYour input is out of range! Enter a choice between 1 to 3")
-                   
+        #choices for agent user      
         while key==0:
                 print("\n1. Search for flights")
                 print("2. List existing bookings")
@@ -418,19 +452,19 @@ def main():
                         curs.prepare("UPDATE users SET last_login=SYSDATE where email=:email1")
                         curs.execute(None, {'email1': email1})
 
-                        print("Have a nice day, Goodbye")
+                        print("\nHave a nice day, Goodbye")
                         break
                 elif choice ==2:
-                       list_(email1, username)
+                       list_delete(email1, username)
 
                 elif choice ==1:
                         search()
 
                 elif choice==4:
-                        record_dep()
+                        rec_departure_arrival()
 
                 elif choice==5:
-                        record_arr()
+                        rec_departure_arrival()
 			
 			
                 elif (choice>5) or (choice<1):
@@ -440,7 +474,7 @@ def main():
          
         curs.close()
         cursInsert.close()	
-
+#error handling
 try:
         username = input("\n\nEnter the username for sql: ")
         password = input("Ener the password for sql: ")
