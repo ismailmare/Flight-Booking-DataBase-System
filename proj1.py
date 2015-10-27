@@ -221,11 +221,13 @@ def list_delete(email, user):
                        print("No Bookings Find, Please Book a Flight, Returning to Main Menu")
                        return
                else:
+                       print("  TNO             NAME       DATE       PRICE  \n")
                        for r in range(0,len(rows)):
                                print (r,rows[r][:-2])
                        choice=input("Please select a Booking You would like to know more about: ")
                        choice=int(choice)
                        #print(rows[choice])
+                       print(rows[choice][0])
                        print(rows[choice][1])
                        print(rows[choice][2])
                        print(rows[choice][3])
@@ -235,10 +237,10 @@ def list_delete(email, user):
                        #rows[choice]
                        if (choice>0):
                                rows=curs.fetchall()
-                               print(rows)
+                               #print(rows)
                                curs.close()
-                               choice2=str(input("Do you wish to cancel this flight? Yes/No? "))
-                               if choice2==("Yes"):
+                               choice2=str(input("Do you wish to cancel this flight? Y/N? "))
+                               if choice2==("Y"):
                                        curs=connection.cursor()
                                        print ("Flight has been canceled")
                                        #query="DELETE from tickets WHERE tno= '%d'" % (tno)
@@ -250,10 +252,13 @@ def list_delete(email, user):
                                        curs.execute(query)
                                        connection.commit()
                                        curs.close()
-                                       print("Returning to Main Menu")
+                                       print("\nReturning to Main Menu")
+                                       return
+                               elif choice2==("N"):
+                                       print("\nReturning to Main Menu")
                                        return
                                else:
-                                       print("Returning to Main Menu")
+                                       print("\nReturning to Main Menu")
                                        return
                        elif (choice.isalpha()):
                                print("Invalid Input, Please enter a Number!")
