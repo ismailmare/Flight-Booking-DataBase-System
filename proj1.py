@@ -221,18 +221,18 @@ def list_delete(email, user):
                        print("No Bookings Find, Please Book a Flight, Returning to Main Menu")
                        return
                else:
-                       print("  TNO             NAME       DATE       PRICE  \n")
+                       print("  TNO     |        NAME      |       DATE                   |                    PRICE  \n")
                        for r in range(0,len(rows)):
                                print (r,rows[r][:-2])
                        choice=input("Please select a Booking You would like to know more about: ")
                        choice=int(choice)
                        #print(rows[choice])
-                       print(rows[choice][0])
-                       print(rows[choice][1])
-                       print(rows[choice][2])
-                       print(rows[choice][3])
-                       print(rows[choice][4])
-                       print(rows[choice][5])
+                       print("FLIGHTNO: " + rows[choice][0])
+                       print("NAME: " + rows[choice][1])
+                       print("DATE: " + rows[choice][2])
+                       print("PRICE: " + rows[choice][3])
+                       print("FARE: " + rows[choice][4])
+                       print("SEAT NO: " + rows[choice][5])
                        tno=(rows[choice][0])
                        #rows[choice]
                        if (choice>0):
