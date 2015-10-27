@@ -89,8 +89,6 @@ def search():
 
 
         dep_time1 = input("\nEnter the departure date as 'DD/MM/YYYY': ")
-        #change added by Preyanshu, if this doesnt work feel free to take it out :D
-	dep_time1 = str(dep_time1)
         choice=input("\nSort by number of connections? y/n: ")
         select = "SELECT flightno,src,dst,dep_time,arr_time, price, seats,fare from available_flights1 where to_char(dep_time,'DD/MM/YYYY')=:dep_time1 and src=:source and dst=:dest ORDER BY price"
         curs.execute(select,{'source': source, 'dest':dest,'dep_time1':dep_time1})
