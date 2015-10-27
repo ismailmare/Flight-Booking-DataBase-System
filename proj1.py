@@ -14,7 +14,7 @@ import sys
 import datetime
 import math
 import random
-
+import time
 
 
 #----------------------------------------------------
@@ -187,21 +187,22 @@ def bookings():
 #List existing bookings. A user should be able to list all his/her existing bookings. The result will be given in a list form and will include for each booking, the ticket number, the passCancel a booking. The user should be able to select a booking from those listed under "list existing bookings" and cancel it. The proper tables should be updated to reflect the cancelation and the cancelled seat should be returned to the system and is made available for future bookings.enger name, the departure date and the price. The user should be able to select a row and get more detailed information about the booking.
 #Cancel a booking. The user should be able to select a booking from those listed under "list existing bookings" and cancel it. The proper tables should be updated to reflect the cancelation and the cancelled seat should be returned to the system and is made available for future bookings. Theoretically these can both be done within the same output, you just have to delete that line from the code.
 
-def list_(email, user):
+def list_delete(email, user):
         print("\n"*10)
         while True:
                #get your query of flights for the user and bind the email to the fed email
                curs=connection.cursor()
-               query="SELECT t.tno, t.name, s.dep_date, t.paid_price, b.fare, b.seat,  FROM tickets t, bookings b, passengers p, sch_flights s WHERE t.email=:email and t.tno=b.tno"
+               query="SELECT t.tno, t.name, b.dep_date, t.paid_price, b.fare, b.seat FROM tickets t, bookings b  WHERE t.email=:email and t.tno=b.tno"
                curs.execute(query, {"email":email})
                rows=curs.fetchall()
-               if rows == "[]":
+               print(len(rows))
+               if rows == []:
                        print("No Bookings Find, Please Book a Flight, Returning to Main Menu")
                        return
                else:
                        for r in range(0,len(rows)):
-                               print (r,rows[r:-2])
-                       choice=input("Please select a Booking You would like to know more about")
+                               print (r,rows[r][r:-2])
+                       choice=input("Please select a Booking You would like to know more about: ")
                        choice=int(choice)
                        print(rows[choice])
                        print(rows[choice][1])
@@ -233,14 +234,14 @@ def list_(email, user):
                                else:
                                        print("Returning to Main Menu")
                                        return
-                       else if (choice.isalpha()):
+                       elif (choice.isalpha()):
                                print("Invalid Input, Please enter a Number!")
                                break
                        else:
                                print("No bookings chosen, return to main menu")
                                return
         return
-        
+     
         
 #-------------------------------------------------------
 
@@ -248,12 +249,12 @@ def list_(email, user):
 
 def rec_departure_arrival(): 
      fno = input("Please enter the flight number: ")
-     dd = input("Please enter the departure date: ")     
+     dd = input("Please enter the departure date(DD/MM/YYYY): ")     
      updating = input("Would you like to record the departure or arrival? ")
      auto = input("Would you like to auto-update? ")
-     if (updating == departure) or (updating == Departure) or (updating == D) or (updating == d):
-          if (auto == Yes) or (auto == yes) or (auto == y) or (auto == Y):
-               update = "UPDATE sch_flights SET act_dep_time = TO_CHAR(SYSDATE, HH24:MI:SS) WHERE flightno == :fno AND dep_date == :dd"
+     if (updating == 'departure') or (updating == 'Departure') or (updating == 'D') or (updating == 'd'):
+          if (auto == 'Yes') or (auto == 'yes') or (auto == 'y') or (auto == 'Y'):
+               update = "UPDATE sch_flights SET act_dep_time=TO_CHAR(SYSDATE, HH24:MI:SS) WHERE flightno == :fno AND dep_date == :dd"
                curs.execute(update,{'fno':fno, 'dd':dd})
                print("Auto-update successful. ")
                
@@ -421,7 +422,7 @@ def main():
                         print("Have a nice day, Goodbye")
                         break
                 elif choice ==2:
-                       list_(email1, username)
+                       list_delete(email1, username)
 
                 elif choice ==1:
                         search()
